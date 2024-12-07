@@ -10,6 +10,7 @@ public class AsteroidSpawner : MonoBehaviour
 
     private Camera mainCamera;
     private float timer;
+    private bool canSpawn = true;
 
     private void Start()
     {
@@ -17,8 +18,13 @@ public class AsteroidSpawner : MonoBehaviour
         timer = secondsBetweenAsteroids;
 
     }
+    public void StopSpawnig()
+    {
+        canSpawn = false;
+    }
     void Update()
     {
+        if (!canSpawn) return;
         timer -= Time.deltaTime;
         if (timer <= 0)
         {
