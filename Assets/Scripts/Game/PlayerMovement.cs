@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
@@ -9,6 +10,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float forceMagnitude;
     [SerializeField] private float maxVelocity;
     [SerializeField] private float rotationSpeed;
+    [SerializeField] private InputReader inputReader;
 
     private Rigidbody rigidBody;
     private Camera mainCamera;
@@ -29,21 +31,42 @@ public class PlayerMovement : MonoBehaviour
     }
     private void Update()
     {
-        ProcessInput();
+        //ProcessInput();
+        HandleTouch();
         KeepPlayerOnScreen();
         RotateToFaceVelocity();
     }
 
     private void FixedUpdate()
     {
+        
         if (movementDirection == Vector3.zero) return;
         rigidBody.AddForce(movementDirection * forceMagnitude, ForceMode.Force);
         rigidBody.velocity = Vector3.ClampMagnitude(rigidBody.velocity, maxVelocity);
+    }
+
+    private void HandleTouch()
+    {
+        if (inputReader.Touching)
+        {
+            Vector3 worldPos = mainCamera.ScreenToWorldPoint(inputReader.MousePosition);
+            movementDirection = transform.position - worldPos;
+            movementDirection.z = 0;
+            movementDirection.Normalize();
+        }
+        else
+        {
+            movementDirection = Vector3.zero;
+        }
         
     }
 
     private void ProcessInput()
     {
+        if (Touchscreen.current == null)
+        {
+            return;
+        }
         if (Touchscreen.current.primaryTouch.press.isPressed)
         {
             Vector2 screenPos = Touchscreen.current.primaryTouch.position.ReadValue();
